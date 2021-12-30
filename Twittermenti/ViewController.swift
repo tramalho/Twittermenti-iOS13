@@ -9,6 +9,8 @@
 import UIKit
 import SwifteriOS
 import CoreML
+import SwiftyJSON
+
 
 class ViewController: UIViewController {
     
@@ -43,13 +45,15 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let result = try! tweetSentimentClassifier?.prediction(text: "@Apple is amzing")
-        
-        print(result?.label)
-        
         swifter?.searchTweet(using: "@Apple", lang: "en", count: 100, tweetMode: .extended, success: {
             (result, metadata) in
-            print(result)
+            
+            result.array?.forEach({ json in
+                if let description = json["full_text"].string {
+                    print(description)
+                }
+            })
+            
         }, failure: { error in
             print("Error: \(error.localizedDescription)")
         })
