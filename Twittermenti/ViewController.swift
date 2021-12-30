@@ -8,6 +8,7 @@
 
 import UIKit
 import SwifteriOS
+import CoreML
 
 class ViewController: UIViewController {
     
@@ -28,17 +29,30 @@ class ViewController: UIViewController {
         
         return nil
     }()
+    
+    private lazy var tweetSentimentClassifier: TweetSentimentClassifier? = {
+        
+        guard let result = try? TweetSentimentClassifier(contentsOf: TweetSentimentClassifier.urlOfModelInThisBundle) else {
+            fatalError("Error create classifier")
+        }
+        
+        return result
+    }()
 
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        swifter?.searchUsers(using: "@Apple", success: { result in
+        let result = try! tweetSentimentClassifier?.prediction(text: "@Apple is amzing")
+        
+        print(result?.label)
+        
+        swifter?.searchTweet(using: "@Apple", lang: "en", count: 100, tweetMode: .extended, success: {
+            (result, metadata) in
             print(result)
         }, failure: { error in
             print("Error: \(error.localizedDescription)")
         })
-        
     }
 
     @IBAction func predictPressed(_ sender: Any) {
