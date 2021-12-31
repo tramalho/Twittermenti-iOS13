@@ -43,13 +43,10 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        request()
     }
 
     @IBAction func predictPressed(_ sender: Any) {
-    
-    
+        request()
     }
     
     fileprivate func prinError(_ error: Error) {
@@ -57,9 +54,12 @@ class ViewController: UIViewController {
     }
     
     fileprivate func request() {
+        
+        guard let searchText = textField?.text else { return }
+        
         var tweetSentiment = [TweetSentimentClassifierInput]()
         
-        swifter?.searchTweet(using: "@Facebook", lang: "en", count: 100, tweetMode: .extended, success: {
+        swifter?.searchTweet(using: searchText, lang: "en", count: 100, tweetMode: .extended, success: {
             (result, metadata) in
                         
             result.array?.forEach({ json in
@@ -101,6 +101,31 @@ class ViewController: UIViewController {
         } catch  {
             prinError(error)
         }
+        
+        configEmoji(score: score)
+    }
+    
+    private func configEmoji(score: Int) {
+        
+        var emoji = "😐"
+        
+        if score > 20 {
+            emoji = "😍"
+        } else if score > 10 {
+            emoji = "😁"
+        } else if score > 0 {
+            emoji = "😀"
+        } else if score == 0 {
+            emoji = "😐"
+        } else if score > -10 {
+            emoji = "😕"
+        } else if score > -20 {
+            emoji = "😡"
+        } else {
+            emoji = "🤮"
+        }
+        
+        sentimentLabel.text = emoji
     }
 }
 
