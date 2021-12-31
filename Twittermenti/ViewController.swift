@@ -40,23 +40,11 @@ class ViewController: UIViewController {
         
         return result
     }()
-
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        swifter?.searchTweet(using: "@Apple", lang: "en", count: 100, tweetMode: .extended, success: {
-            (result, metadata) in
-            
-            result.array?.forEach({ json in
-                if let description = json["full_text"].string {
-                    print(description)
-                }
-            })
-            
-        }, failure: { error in
-            print("Error: \(error.localizedDescription)")
-        })
+
+        request()
     }
 
     @IBAction func predictPressed(_ sender: Any) {
@@ -64,5 +52,55 @@ class ViewController: UIViewController {
     
     }
     
+    fileprivate func prinError(_ error: Error) {
+        print("Error: \(error.localizedDescription)")
+    }
+    
+    fileprivate func request() {
+        var tweetSentiment = [TweetSentimentClassifierInput]()
+        
+        swifter?.searchTweet(using: "@Facebook", lang: "en", count: 100, tweetMode: .extended, success: {
+            (result, metadata) in
+                        
+            result.array?.forEach({ json in
+                if let description = json["full_text"].string {
+                    tweetSentiment.append(TweetSentimentClassifierInput(text: description))
+                }
+            })
+            
+            self.obtainPrediction(tweetSentiment)
+            
+        }, failure: { error in
+            print("Error: \(error.localizedDescription)")
+        })
+    }
+    
+    fileprivate func obtainPrediction(_ tweetSentiment: [TweetSentimentClassifierInput]) {
+        
+        var score = 0
+        
+        do {
+            
+            guard let predictions = try tweetSentimentClassifier?.predictions(inputs: tweetSentiment) else {
+                return
+            }
+            
+            predictions.forEach { tweetSentiment in
+                
+                if tweetSentiment.label == "Pos" {
+                    score+=1
+                } else if tweetSentiment.label == "Neg" {
+                    score-=1
+                }
+                
+                print("Label: \(tweetSentiment.label) : Score: \(score)")
+            }
+            
+            print("Final Score: \(score)")
+            
+        } catch  {
+            prinError(error)
+        }
+    }
 }
 
